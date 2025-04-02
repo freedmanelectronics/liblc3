@@ -80,7 +80,11 @@ encoded_length = stream_length + dec.get_delay_samples()
 for i in range(0, encoded_length, frame_length):
 
     lc3_frame_size = struct.unpack('=H', f_lc3.read(2))[0]
-    pcm = dec.decode(f_lc3.read(lc3_frame_size), bit_depth=bit_depth)
+    lc3_frame_data = [
+        f_lc3.read((lc3_frame_size // nchannels) + (i < (lc3_frame_size % nchannels)))
+        for i in range(nchannels)
+    ]
+    pcm = dec.decode(lc3_frame_data, bit_depth=bit_depth)
 
     pcm = pcm[max(encoded_length - stream_length - i, 0) * pcm_size:
               min(encoded_length - i, frame_length) * pcm_size]
